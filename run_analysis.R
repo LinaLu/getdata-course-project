@@ -7,9 +7,6 @@ replatePatterns <- function(pattern, replacement, x, ...) {
 }
 
 
-setwd("~/r/getdata-005/course project")
-
-
 training <- read.csv("UCI HAR Dataset/train/X_train.txt", header=FALSE, sep="")
 training[,562]<- read.csv("UCI HAR Dataset/train/y_train.txt", header=FALSE, sep="")
 training[,563] <- read.csv("UCI HAR Dataset/train/subject_train.txt", header=FALSE, sep="")
@@ -28,20 +25,22 @@ rm(test)
 
 
 
-mean_std_index <-grep("$mean()|std()",names(dataset))
+mean_std_index <-grep("mean|std",names(dataset), ignore.case = TRUE)
 dataset_mean_std <- subset(dataset[,c(mean_std_index,562,563)])
 activity_label <- read.csv("UCI HAR Dataset/activity_labels.txt", header=FALSE, sep="")
 
 dataset_mean_std$activity <- sapply(dataset_mean_std$activity, function(x){
-    activity_label[x,2]
-  })
+  activity_label[x,2]
+})
 
 names(dataset_mean_std) <- replatePatterns(c("[()]","-", "A", "B", "G", "J", "M"), 
                                            c("","_", "_a", "_b", "_g", "_j", "_m"), 
                                            names(dataset_mean_std))
 
 
-dataset_average <- aggregate(. ~ activity + subject, data = dataset, mean)
+dataset_average <- aggregate(. ~ activity + subject, data = dataset_mean_std, mean)
+
+write.table(dataset_average,"tidy.txt",row.name=FALSE)
 
 
 
